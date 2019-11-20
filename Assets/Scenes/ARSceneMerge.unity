@@ -4183,8 +4183,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: ReLoadScene
+      - m_Target: {fileID: 4381993362862821083}
+        m_MethodName: ActivateScanning
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5009,7 +5009,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Reset
+  m_Text: Activate Scanning
 --- !u!114 &3572332735068423969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5147,7 +5147,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 4381993362862821083}
         m_MethodName: ToggleWallPlacement
         m_Mode: 1
         m_Arguments:
@@ -5288,7 +5288,7 @@ GameObject:
   - component: {fileID: 4381993362862821061}
   - component: {fileID: 4381993362862821080}
   m_Layer: 0
-  m_Name: UIManager
+  m_Name: Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5895,7 +5895,7 @@ GameObject:
   - component: {fileID: 7616665705605172271}
   - component: {fileID: 3530584309720705051}
   m_Layer: 5
-  m_Name: ResetText
+  m_Name: PlacePlaneText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6106,7 +6106,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 4381993362862821083}
         m_MethodName: RenderWalls
         m_Mode: 1
         m_Arguments:
@@ -6398,7 +6398,7 @@ GameObject:
   - component: {fileID: 7195596165054571784}
   - component: {fileID: 1178424004252846111}
   m_Layer: 5
-  m_Name: Reset
+  m_Name: ActivateScanning
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7013,7 +7013,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 4381993362862821083}
         m_MethodName: RemovePreviouseWall
         m_Mode: 1
         m_Arguments:

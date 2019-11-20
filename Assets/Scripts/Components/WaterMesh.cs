@@ -92,7 +92,7 @@ public class WaterMesh : MonoBehaviour
     private ARTransformationManager arTransformationManager;
 
 
-
+    // Precis som du säger är denna klassen nod överflödig nu. tror jag
     public void Start()
     {
         locationProvider = ARLocationProvider.Instance;
@@ -151,8 +151,16 @@ public class WaterMesh : MonoBehaviour
                 //GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 GameObject obj = new GameObject();
                 //obj.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                // vad händer här?
+                // Han gör ett nytt gameobject på rätt ställe i unity världen. jag ska Bara se en sak
                 obj.transform.SetParent(arLocationRoot.transform);
                 obj.transform.localPosition = glp.localLocation;
+                // Det verkar itne som att han använder unity objectet efter han skapat det så det kanske bara är debug
+                // SOåk, innan jag tittat aldeles för mycket så är jag nyfiken på, sa han att du skjulle göra några ändringar för att det skulle fungera? Ja men han sa att det var enkelt och att jag ´bara skulle andvända hans konvertering istället för den gamla
+                // men jag använder ju massa events för att kolla när gpsen initierats och skit
+                // Aight ska titta lite till
+                // Innan du tittar vidare. Om denna klassen bara sköter konverteringen. Vad är smidigast? Att skriva om dety och inte anv'nda watermesh för det eller försöka modda befintlig kod?
+                //Visa mig hans converterings klass
                 //glp.gameObject = obj; // GO
                 // <---
                 state.globalLocalPositions.Add(glp);
@@ -226,6 +234,7 @@ public class WaterMesh : MonoBehaviour
             //Vector3 targetPosition = Location.GetGameObjectPositionForLocation(
             //        arLocationRoot, mainCameraTransform, deviceLocation, obj.location, isHeightRelative
             //    );
+            // har ersatt koden ovan med koden under du eller han? Han när vi satt tillsammans men
             Vector3 targetPosition = arTransformationManager.GpsToArWorld(obj.location);
 
 

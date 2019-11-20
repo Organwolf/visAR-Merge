@@ -23,21 +23,22 @@ public class Manager : MonoBehaviour
 
     private Location deviceLocation;
     private Location closestPoint;
-    private WaterMesh waterMesh;
+    //private WaterMesh waterMesh;
     private DelaunayMesh delaunayMesh;
     private WallPlacement wallPlacement;
-    private List<Location> withinRadiusData;
+    //private List<Location> withinRadiusData;
     private List<Location> entireCSVData;
     private float offset = 0f;
     private bool meshGenerated = false;
     private Vector3 lastScannedPosition = Vector3.zero;
     private ARTransformationManager aRTransformationManager;
     private ARLocationProvider aRLocationProvider;
-    private bool calibratedGPS = false;
+    private bool planeDetectionActivated = false;
+    private bool scanningActivated = false;
 
     private void Awake()
     {
-        waterMesh = GetComponent<WaterMesh>();
+        //waterMesh = GetComponent<WaterMesh>();
         delaunayMesh = GetComponent<DelaunayMesh>();
         wallPlacement = GetComponent<WallPlacement>();
         entireCSVData = CSV_extended.ParseCsvFileUsingResources(pathToCSV);
@@ -60,38 +61,88 @@ public class Manager : MonoBehaviour
         }
     }
 
+    public void ActivateScanning()
+    {
+        scanningActivated = true;
+    }
+
     private void Update()
     {
         // TODO
         // have to add a check for if the groundplane is set or not
 
-        if (aRTransformationManager.TransformationAvailable && !calibratedGPS)
+        if (aRTransformationManager.TransformationAvailable && !meshGenerated)
         {
-            calibratedGPS = true;
+            if(!planeDetectionActivated && scanningActivated)
+            {
+                // enable plane detection
+                wallPlacement.TogglePlaneDetection();
 
-            // DEBUG
-            SSTools.ShowMessage("GPS Calibrated", SSTools.Position.top, SSTools.Time.threeSecond);
+                SSTools.ShowMessage("Scan the ground", SSTools.Position.top, SSTools.Time.threeSecond);
+                SSTools.ShowMessage("And Select ground", SSTools.Position.bottom, SSTools.Time.threeSecond);
 
-            // get device location
-            var deviceLocation = aRLocationProvider.LastLocation;
-
-            // get the points around the user
-            withinRadiusData = CSV_extended.PointsWithinRadius(entireCSVData, radius, deviceLocation.ToLocation());
-
-            // convert the relevant points from longitude and latitude to Unity AR space
-            waterMesh.SetPositionsToHandleLocations(withinRadiusData);
-
-            // get the closest point
-            closestPoint = CSV_extended.ClosestPointGPS(withinRadiusData, deviceLocation.ToLocation());
-
-            // DEBUG
-            SSTools.ShowMessage("Points Loaded", SSTools.Position.bottom, SSTools.Time.threeSecond);
-
-            generateMeshButton.interactable = true;
+                planeDetectionActivated = true;
+            }
             
-            // Further down the line I would like to generate the mesh directly
-            // GenerateMesh();
+            if(wallPlacement.IsGroundPlaneSet())
+            {
+                // get device location
+                var deviceLocation = aRLocationProvider.LastLocation;
 
+                // get the points around the user
+                var locationsToCreateMeshWith = CSV_extended.PointsWithinRadius(entireCSVData, radius, deviceLocation.ToLocation());
+
+                // get the closest point
+                closestPoint = CSV_extended.ClosestPointGPS(locationsToCreateMeshWith, deviceLocation.ToLocation());
+                float heightAtCamera = (float)closestPoint.Height;
+
+                Debug.Log("Height at camera:" + heightAtCamera);
+
+                // Convert GPS data to local data.
+                var localPositionsToGenerate = new List<Vector3>();
+
+                //float currentWaterHeight = 0;
+                foreach (var gpsLocation in locationsToCreateMeshWith)
+                {
+                    var unityPosition = aRTransformationManager.GpsToArWorld(gpsLocation);
+
+                    // Om detta behövs senare sätt in det i en egen funktion
+                    float calculatedHeight = 0;
+
+                    float height = (float)gpsLocation.Height;
+                    float waterheight = (float)gpsLocation.WaterHeight;
+                    bool insidebuilding = gpsLocation.Building;
+                    float nearestneighborheight = (float)gpsLocation.NearestNeighborHeight;
+                    float nearestneighborwater = (float)gpsLocation.NearestNeighborWater;
+
+                    if (insidebuilding)
+                    {
+                        if (nearestneighborheight != -9999)
+                        {
+                            calculatedHeight = CalculateRelativeHeight(heightAtCamera, nearestneighborheight, nearestneighborwater);
+                            //currentWaterHeight = nearestneighborwater;
+                        }
+                    }
+                    else
+                    {
+                        calculatedHeight = CalculateRelativeHeight(heightAtCamera, height, waterheight);
+                        //currentWaterHeight = waterheight;
+                    }
+
+                    //Debug.Log("Calculated height: " + calculatedHeight);
+
+                    unityPosition.y = calculatedHeight;
+                    localPositionsToGenerate.Add(unityPosition);
+                }
+            
+                meshGenerated = GenerateMesh(localPositionsToGenerate);
+
+                if (meshGenerated)
+                {
+                    //EnableWallPlacementAndUpdateCurrentWater(currentWaterHeight);
+                    EnableWallPlacement();
+                }
+            }
         }
     }
 
@@ -140,7 +191,7 @@ public class Manager : MonoBehaviour
         lastScannedPosition = aRCamera.transform.position;
         SSTools.ShowMessage("Out of bounds. Re-scan ground", SSTools.Position.top, SSTools.Time.twoSecond);
         delaunayMesh.ClearMesh();
-        waterMesh.Restart();
+        //waterMesh.Restart();
         new WaitForSecondsRealtime(2f);
         wallPlacement.ResetScanning();
     }
@@ -180,52 +231,18 @@ public class Manager : MonoBehaviour
 
     */
 
-    private void InitializeWaterMesh()
-    {        
-        withinRadiusData = CSV_extended.PointsWithinRadius(entireCSVData, radius, deviceLocation);
-        waterMesh.SetPositionsToHandleLocations(withinRadiusData);
-    }
+    //private void InitializeWaterMesh()
+    //{        
+    //    //withinRadiusData = CSV_extended.PointsWithinRadius(entireCSVData, radius, deviceLocation);
+    //    //waterMesh.SetPositionsToHandleLocations(withinRadiusData);
+    //}
 
-    public void GenerateMesh()
+    public bool GenerateMesh(List<Vector3> points)
     {
         // Toast instruction
-        SSTools.ShowMessage("Place walls if needed", SSTools.Position.top, SSTools.Time.threeSecond);
+        // SSTools.ShowMessage("Place walls if needed", SSTools.Position.bottom, SSTools.Time.threeSecond);
 
-        double currentWaterHeight = 0;
         var groundPlaneTransform = wallPlacement.GetGroundPlaneTransform();
-        var stateData = waterMesh.GetLocationsStateData();
-        var globalLocalPositions = stateData.GetGlobalLocalPosition();
-        var points = new List<Vector3>();
-        float heightAtCamera = (float)closestPoint.Height;
-
-        foreach (var globalLocalPosition in globalLocalPositions)
-        {
-            float calculatedHeight = 0;
-            float zPosition = globalLocalPosition.localLocation.z;
-            float xPosition = globalLocalPosition.localLocation.x;
-            Location location = globalLocalPosition.location;
-            float height = (float)location.Height;
-            float waterHeight = (float)location.WaterHeight;
-            bool insideBuilding = location.Building;
-            float nearestNeighborHeight = (float)location.NearestNeighborHeight;
-            float nearestNeighborWater = (float)location.NearestNeighborWater;
-
-            if (insideBuilding)
-            {
-                if (nearestNeighborHeight != -9999)
-                {
-                    calculatedHeight = CalculateRelativeHeight(heightAtCamera, nearestNeighborHeight, nearestNeighborWater);
-                    currentWaterHeight = nearestNeighborWater;
-                }
-            }
-            else
-            {
-                calculatedHeight = CalculateRelativeHeight(heightAtCamera, height, waterHeight);
-                currentWaterHeight = waterHeight;
-            }
-
-            points.Add(new Vector3(xPosition, calculatedHeight, zPosition)); // Exaggerate height if needed
-        }
 
         if (groundPlaneTransform != null)
         {
@@ -233,14 +250,20 @@ public class Manager : MonoBehaviour
         }
         else
         {
+            Debug.Log("Groundplane == null");
             delaunayMesh.Generate(points, transform);
         }
 
-        // Enable wall placement and update current water height at closest point
+        //Returns true if mesh was generated successsfully. So far we will always say true but might change in future.
+        return true;
+    }
+
+    //private void EnableWallPlacementAndUpdateCurrentWater(double currentWaterHeight)    
+    private void EnableWallPlacement()
+    {
         wallPlacement.SetWallPlacementEnabled(true);
         wallPlacement.WaterMeshGenerated(true);
-        wallPlacement.SetCurrentWaterHeight(currentWaterHeight);
-        
+        //wallPlacement.SetCurrentWaterHeight(currentWaterHeight);
     }
 
     private float CalculateRelativeHeight(float heightAtCamera, float heightAtPoint, float waterHeightAtPoint)

@@ -85,6 +85,7 @@ public class WallPlacement : MonoBehaviour
         endPoint.SetActive(false);
         measuringstick.SetActive(false);
         measureLine = GetComponent<LineRenderer>();
+        arPlaneManager.enabled = false;
         measureLine.enabled = false;
     }
 
@@ -100,7 +101,7 @@ public class WallPlacement : MonoBehaviour
 
     private void Update()
     {
-        if (!EventSystem.current.IsPointerOverGameObject(0))
+        if (!EventSystem.current.IsPointerOverGameObject(0) && arPlaneManager.enabled)
         {
             if (Input.touchCount > 0)
             {

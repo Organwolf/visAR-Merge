@@ -24,7 +24,7 @@ public partial class DelaunayMesh : MonoBehaviour
 
     public void Generate(IEnumerable<Vector3> locations, Transform groundPlaneTransform)
     {
-
+        float waterHeight = 0;
         Polygon polygon = new Polygon();
         elevations = new List<float>();
 
@@ -33,19 +33,10 @@ public partial class DelaunayMesh : MonoBehaviour
         // Create separate polygons for the triangulation
         foreach (var location in locations)
         {
+            waterHeight = location.y;
             polygon.Add(new Vertex(location.x, location.z));
-        }
 
-        TriangleNet.Meshing.ConstraintOptions options = new TriangleNet.Meshing.ConstraintOptions() { ConformingDelaunay = false };
-        mesh = (TriangleNet.Mesh)polygon.Triangulate(options);
-
-        var globalLocalPositions = locations.ToArray();
-        for (int i = 0; i < globalLocalPositions.Length; i++)
-        {
-            var currentPosition = globalLocalPositions[i];
-            var waterHeight = currentPosition.y;
-
-            if(waterHeight != -9999)
+            if (waterHeight != -9999)
             {
                 elevations.Add((float)waterHeight + groundPlaneTransform.position.y);
             }
@@ -54,6 +45,27 @@ public partial class DelaunayMesh : MonoBehaviour
                 elevations.Add(groundPlaneTransform.position.y);
             }
         }
+
+        TriangleNet.Meshing.ConstraintOptions options = new TriangleNet.Meshing.ConstraintOptions() { ConformingDelaunay = false };
+        mesh = (TriangleNet.Mesh)polygon.Triangulate(options);
+
+        //var globalLocalPositions = locations.ToArray();
+        //for (int i = 0; i < globalLocalPositions.Length; i++)
+        //{
+        //    //var currentPosition = globalLocalPositions[i];
+        //    //var waterHeight = currentPosition.y;
+        //    var waterHeight = currentPosition.y;
+
+        //    if(waterHeight != -9999)
+        //    {
+        //        elevations.Add((float)waterHeight + groundPlaneTransform.position.y);
+        //    }
+        //    else
+        //    {
+        //        elevations.Add(groundPlaneTransform.position.y);
+        //    }
+        //}
+
         ClearMesh();
         MakeMesh();
         // Boolean that is set once the mesh is created
