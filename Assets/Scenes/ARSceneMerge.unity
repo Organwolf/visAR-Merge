@@ -3839,8 +3839,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: ToggleInformation
+      - m_Target: {fileID: 4381993362862821083}
+        m_MethodName: ToggleSettings
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4624,8 +4624,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: ToggleInformation
+      - m_Target: {fileID: 4381993362862821083}
+        m_MethodName: ToggleSettings
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5301,7 +5301,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4381993362862821062}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e68b9b0eaecc63144b6361e78063440a, type: 3}
   m_Name: 
@@ -5342,7 +5342,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32019130ebf31014f8e73ef2fd9be632, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Camera: {fileID: 0}
+  Camera: {fileID: 703415916}
   WaitForARTrackingToStart: 1
   RestartWhenARTrackingIsRestored: 0
   SetTargetFrameRateTo60Mhz: 1

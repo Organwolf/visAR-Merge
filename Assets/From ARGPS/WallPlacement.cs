@@ -105,6 +105,8 @@ public class WallPlacement : MonoBehaviour
         {
             if (Input.touchCount > 0)
             {
+                Debug.Log("TOUCH DETECTED");
+
                 var touch = Input.GetTouch(0);
 
                 if (TouchPhase.Began == touch.phase)
@@ -118,6 +120,7 @@ public class WallPlacement : MonoBehaviour
                         {
                             if (wallPlacementEnabled)
                             {
+                                Debug.Log("WALLPLACEMENT hit");
                                 startPoint.transform.SetPositionAndRotation(hitInfo.point, Quaternion.identity);
 
                                 if (walls.Count > 0)
@@ -143,6 +146,8 @@ public class WallPlacement : MonoBehaviour
                             // Placement of measuring stick
                             else
                             {
+                                Debug.Log("STICK hit");
+
                                 var cameraForward = arCamera.transform.forward;
                                 var cameraBearing = new Vector3(cameraForward.x, 0, cameraForward.z).normalized;
                                 measuringstick.transform.SetPositionAndRotation(hitInfo.point, Quaternion.LookRotation(cameraBearing));
@@ -158,6 +163,8 @@ public class WallPlacement : MonoBehaviour
                     {
                         if (arRaycastManager.Raycast(touch.position, hitsAR, UnityEngine.XR.ARSubsystems.TrackableType.PlaneWithinPolygon))
                         {
+                            Debug.Log("GROUNDPLANE hit");
+
                             Debug.Log("Placed the plane");
                             var hitPose = hitsAR[0].pose;
                             groundPlane = Instantiate(groundPlanePrefab, hitPose.position, hitPose.rotation);
@@ -334,6 +341,7 @@ public class WallPlacement : MonoBehaviour
 
     public void WaterMeshGenerated(bool state)
     {
+        Debug.Log("Water mesh bool set <-- ");
         waterMeshRendered = state;
     }
 
@@ -368,7 +376,7 @@ public class WallPlacement : MonoBehaviour
 
     public bool GetWallPlacementEnabled() => wallPlacementEnabled;
 
-    public void SetWallPlacementEnabled(bool state) => wallPlacementEnabled = state;
+    //public void SetWallPlacementEnabled(bool state) => wallPlacementEnabled = state;
 
     public Transform GetGroundPlaneTransform()
     {

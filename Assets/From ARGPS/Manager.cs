@@ -68,9 +68,6 @@ public class Manager : MonoBehaviour
 
     private void Update()
     {
-        // TODO
-        // have to add a check for if the groundplane is set or not
-
         if (aRTransformationManager.TransformationAvailable && !meshGenerated)
         {
             if(!planeDetectionActivated && scanningActivated)
@@ -129,7 +126,7 @@ public class Manager : MonoBehaviour
                         //currentWaterHeight = waterheight;
                     }
 
-                    //Debug.Log("Calculated height: " + calculatedHeight);
+                    Debug.Log("Calculated height: " + calculatedHeight);
 
                     unityPosition.y = calculatedHeight;
                     localPositionsToGenerate.Add(unityPosition);
@@ -140,7 +137,10 @@ public class Manager : MonoBehaviour
                 if (meshGenerated)
                 {
                     //EnableWallPlacementAndUpdateCurrentWater(currentWaterHeight);
-                    EnableWallPlacement();
+                    //EnableWallPlacement();
+                    wallPlacement.WaterMeshGenerated(true);
+                    wallPlacement.ToggleWallPlacement();
+                    Debug.Log("Wallplacement enabled");
                 }
             }
         }
@@ -261,8 +261,8 @@ public class Manager : MonoBehaviour
     //private void EnableWallPlacementAndUpdateCurrentWater(double currentWaterHeight)    
     private void EnableWallPlacement()
     {
-        wallPlacement.SetWallPlacementEnabled(true);
-        wallPlacement.WaterMeshGenerated(true);
+        //wallPlacement.SetWallPlacementEnabled(true);
+        //wallPlacement.WaterMeshGenerated(true);
         //wallPlacement.SetCurrentWaterHeight(currentWaterHeight);
     }
 
@@ -385,8 +385,11 @@ public class Manager : MonoBehaviour
     public void ToggleWallPlacement()
     {
         wallPlacement.ToggleWallPlacement();
+
         if (wallPlacement.GetWallPlacementEnabled())
+        {
             togglePlacementText.text = "Place Measuring Stick";
+        }
         else
         {
             togglePlacementText.text = "Place Walls";
