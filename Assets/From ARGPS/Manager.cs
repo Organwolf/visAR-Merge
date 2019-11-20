@@ -193,7 +193,7 @@ public class Manager : MonoBehaviour
         delaunayMesh.ClearMesh();
         //waterMesh.Restart();
         new WaitForSecondsRealtime(2f);
-        wallPlacement.ResetScanning();
+        //wallPlacement.ResetScanning();
     }
     
     /*

@@ -101,7 +101,7 @@ public class WallPlacement : MonoBehaviour
 
     private void Update()
     {
-        if (!EventSystem.current.IsPointerOverGameObject(0) && arPlaneManager.enabled)
+        if (!EventSystem.current.IsPointerOverGameObject(0))
         {
             if (Input.touchCount > 0)
             {
@@ -326,18 +326,18 @@ public class WallPlacement : MonoBehaviour
         }
     }
 
-    public void ResetScanning()
-    {
-        planeIsPlaced = false;
-        waterMeshRendered = false;
-        groundPlane = null;
-        measuringstick.SetActive(false);
-        RemoveAllWalls();
-        if(!arPlaneManager.enabled)
-        {
-            arPlaneManager.enabled = true;
-        }
-    }
+    //public void ResetScanning()
+    //{
+    //    planeIsPlaced = false;
+    //    waterMeshRendered = false;
+    //    groundPlane = null;
+    //    measuringstick.SetActive(false);
+    //    RemoveAllWalls();
+    //    if(!arPlaneManager.enabled)
+    //    {
+    //        arPlaneManager.enabled = true;
+    //    }
+    //}
 
     public void WaterMeshGenerated(bool state)
     {
