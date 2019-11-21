@@ -1,9 +1,6 @@
-﻿using Accord.Math.Optimization.Losses;
-using Accord.Statistics.Models.Regression.Linear;
-using ARLocation;
+﻿using ARLocation;
 using Assets.Scripts.GPStoWorldTransformation;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +22,8 @@ public class ARTransformationManager : MonoBehaviour
     private GpsToWorldTransformation GpsToWorld = new MultivariateLinearRegressionOnXYZTransformation();
 
     public bool TransformationAvailable => GpsToWorld.TransformationAvailable;
+
+    public int Percentage => GpsToWorld.Percentage;
 
     public void Awake()
     {

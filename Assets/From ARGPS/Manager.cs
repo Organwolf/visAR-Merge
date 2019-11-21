@@ -20,6 +20,12 @@ public class Manager : MonoBehaviour
     [SerializeField] Camera aRCamera;
     [SerializeField] int bounds = 0;
     [SerializeField] Text[] informationTexts;
+    [SerializeField] GameObject animatedArrowPrefab;
+
+    // GUI
+    [SerializeField] GameObject calibatedPannel;
+    [SerializeField] GameObject notCalibatedPannel;
+    [SerializeField] Text percentageToCalibrated;
 
     private Location deviceLocation;
     private Location closestPoint;
@@ -52,18 +58,41 @@ public class Manager : MonoBehaviour
 
     private void Start()
     {
+        // Instantiate the arrow prompt to walk around
+        // I want to place the object in front of the user
+        var arrowPrompt = Instantiate(animatedArrowPrefab);
+        var arrowPosition = new Vector3(0, 0, 2);
+        arrowPrompt.transform.position = arrowPosition;
+
         // Toast instruction
         SSTools.ShowMessage("Walk around", SSTools.Position.top, SSTools.Time.threeSecond);
 
+        // If settings change the bounds apply those changes
         if(PlayerPrefs.HasKey("Bounds"))
         {
             bounds = PlayerPrefs.GetInt("Bounds");
         }
+        SetCallibrated(false);
+    }
+
+    private void SetCallibrated(bool calibrated)
+    {
+        calibatedPannel.SetActive(calibrated);
+        notCalibatedPannel.SetActive(!calibrated);
     }
 
     public void ActivateScanning()
     {
         scanningActivated = true;
+    }
+
+    private void FixedUpdate()
+    {
+        if (aRTransformationManager != null)
+        {
+            percentageToCalibrated.text = aRTransformationManager.Percentage.ToString() + " %";
+            SetCallibrated(aRTransformationManager.TransformationAvailable);
+        }
     }
 
     private void Update()

@@ -29,6 +29,8 @@ namespace Assets.Scripts.GPStoWorldTransformation
         public int NumberOfTestRecords => testRecords.Count;
         public TransformationRecords Records => records;
 
+        public int Percentage => (int)(NumberOfRecords / (float)minNumberOfPointToSolve * 100f);
+
         public virtual void Restart()
         {
             records = new TransformationRecords();
