@@ -14,10 +14,12 @@ namespace Assets.Scripts.GPStoWorldTransformation
         protected TransformationRecords records = new TransformationRecords();
         protected TransformationRecords testRecords = new TransformationRecords();
         protected double minDistDataCollectionThreshold = 0.02;
-        protected int minNumberOfPointToSolve = 20;
+        //protected int minNumberOfPointToSolve = 20;
+        protected int minNumberOfPointToSolve = 2;
         protected int caclulationSteps = 10;
         protected int maxRecordSize = 200;
-        protected double minAccuracy = 5;
+        //protected double minAccuracy = 5;
+        protected double minAccuracy = 10;
         protected bool gatherTestDataEnabled = true;
         protected int testRecordSelectionStep = 5;
         protected int maxTestRecordSize = 50;
