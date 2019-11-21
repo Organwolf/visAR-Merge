@@ -63,7 +63,8 @@ public class WallPlacement : MonoBehaviour
     private List<GameObject> listOfWallMeshes;
     private double currentWaterHeight = 0;
     private bool waterMeshRendered = false;
-    private List<WaterMesh.GlobalLocalPosition> currentGlobalLocalPositions;
+    private List<Location> currentGlobalPositions;
+    private List<Vector3> currentLocalPositions;
     private List<Location> dataWithinRadius;
     private textOverlay measuringStickTextOverlay;
 
@@ -280,41 +281,44 @@ public class WallPlacement : MonoBehaviour
         dataWithinRadius = pointsWithinSetRadius;
     }
 
-    public void SetCurrentGlobalLocalPositions(List<WaterMesh.GlobalLocalPosition> globalLocalPositions)
+    public void SetCurrentGlobalLocalPositions(List<Location> globalPositions, List<Vector3> localPositions)
     {
-        currentGlobalLocalPositions = globalLocalPositions;
-        
-        var lengthOfList = currentGlobalLocalPositions.Count;
-        Debug.Log($"length of global local positions: {lengthOfList} ");
+        currentGlobalPositions = globalPositions;
+        currentLocalPositions = localPositions;
+
+        var lengthOfGlobalList = currentGlobalPositions.Count;
+        Debug.Log($"length of global local positions: {lengthOfGlobalList} ");
+        var lengthOfLocalList = currentLocalPositions.Count;
+        Debug.Log($"length of global local positions: {lengthOfLocalList} ");
     }
 
     public double CalculateWaterHeightAtPosision(Vector3 stickPosition)
     {
         var minDistance = float.MaxValue;
         float distance;
-        Location closestLocation = null;
-        int length = currentGlobalLocalPositions.Count;
-        int index = 0;
+        Location point = null;
+        int length = currentLocalPositions.Count;
+        //int index = 0;
 
         // Separate function (?)
         for (int i= 0;  i < length; i++)
         {
-            var locationData = currentGlobalLocalPositions[i];
-            distance = Vector3.Distance(locationData.localLocation, stickPosition);
+            var locationData = currentLocalPositions[i];
+            distance = Vector3.Distance(locationData, stickPosition);
 
             if(distance < minDistance)
             {
                 minDistance = distance;
-                closestLocation = locationData.location;
-                index = i;
+                point = currentGlobalPositions[i];
+                //index = i;
             }
         }
 
-        Location point = dataWithinRadius[index];
+        //Location point = dataWithinRadius[index];
 
         // DEBUG STUFF
-        Debug.Log($"Index: Long: {point.Longitude}  Lat: {point.Latitude}  Water height: {point.WaterHeight}");
-        Debug.Log($"locationData:  Long: {closestLocation.Longitude}  Lat: {closestLocation.Latitude}  Water height: {closestLocation.WaterHeight}");
+        //Debug.Log($"Index: Long: {point.Longitude}  Lat: {point.Latitude}  Water height: {point.WaterHeight}");
+        Debug.Log($"locationData:  Long: {point.Longitude}  Lat: {point.Latitude}  Water height: {point.WaterHeight}");
 
         if (point.Building)
         {

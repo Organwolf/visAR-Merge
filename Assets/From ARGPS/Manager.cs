@@ -141,7 +141,10 @@ public class Manager : MonoBehaviour
                     wallPlacement.WaterMeshGenerated(true);
                     wallPlacement.ToggleWallPlacement();
                     Debug.Log("Wallplacement enabled");
+                    wallPlacement.SetCurrentGlobalLocalPositions(locationsToCreateMeshWith, localPositionsToGenerate);
                 }
+
+                // Send data to wallplacement class for measuring stick calculations
             }
         }
     }
