@@ -48,7 +48,7 @@ public class Manager : MonoBehaviour
         delaunayMesh = GetComponent<DelaunayMesh>();
         wallPlacement = GetComponent<WallPlacement>();
         entireCSVData = CSV_extended.ParseCsvFileUsingResources(pathToCSV);
-        generateMeshButton.interactable = false;
+        generateMeshButton.interactable = true;
         informationCanvas.enabled = false;
         settingsCanvas.enabled = false;
         aRTransformationManager = ARTransformationManager.Instance;
@@ -168,7 +168,7 @@ public class Manager : MonoBehaviour
                     //EnableWallPlacementAndUpdateCurrentWater(currentWaterHeight);
                     //EnableWallPlacement();
                     wallPlacement.WaterMeshGenerated(true);
-                    wallPlacement.ToggleWallPlacement();
+                    wallPlacement.SetWallPlacementEnabled(true);
                     Debug.Log("Wallplacement enabled");
                     wallPlacement.SetCurrentGlobalLocalPositions(locationsToCreateMeshWith, localPositionsToGenerate);
                 }
@@ -313,6 +313,20 @@ public class Manager : MonoBehaviour
         {
             text.enabled = false;
         }
+    }
+
+    public void ClearMesh()
+    {
+        if(delaunayMesh.isMeshCreated())
+        {
+            delaunayMesh.ClearMesh();
+
+        }
+    }
+
+    public void RegenerateMesh()
+    {
+        meshGenerated = false;
     }
 
     public void SettingsDone()

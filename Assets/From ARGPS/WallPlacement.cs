@@ -376,7 +376,7 @@ public class WallPlacement : MonoBehaviour
 
     public bool GetWallPlacementEnabled() => wallPlacementEnabled;
 
-    //public void SetWallPlacementEnabled(bool state) => wallPlacementEnabled = state;
+    public void SetWallPlacementEnabled(bool state) => wallPlacementEnabled = state;
 
     public Transform GetGroundPlaneTransform()
     {
