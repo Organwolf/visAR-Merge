@@ -18,7 +18,7 @@ public class Manager : MonoBehaviour
     [SerializeField] Canvas settingsCanvas;
     [SerializeField] InputField boundsInput;
     [SerializeField] Camera aRCamera;
-    [SerializeField] int bounds = 0;
+    [SerializeField] int bounds = 30;
     [SerializeField] Text[] informationTexts;
     [SerializeField] GameObject animatedArrowPrefab;
 
@@ -37,6 +37,9 @@ public class Manager : MonoBehaviour
     private float offset = 0f;
     private bool meshGenerated = false;
     private Vector3 lastScannedPosition = Vector3.zero;
+    private float lastScannedHeight = 0f;
+    private float heightAtCamera;
+    private float timeSinceLastCalculation = 0f;
     private ARTransformationManager aRTransformationManager;
     private ARLocationProvider aRLocationProvider;
     private bool planeDetectionActivated = false;
@@ -97,6 +100,8 @@ public class Manager : MonoBehaviour
 
     private void Update()
     {
+        timeSinceLastCalculation += Time.deltaTime;
+        /* If I set meshGenerated to false will I scan the ground again? */
         if (aRTransformationManager.TransformationAvailable && !meshGenerated)
         {
             if(!planeDetectionActivated && scanningActivated)
@@ -109,165 +114,153 @@ public class Manager : MonoBehaviour
 
                 planeDetectionActivated = true;
             }
-            
-            if(wallPlacement.IsGroundPlaneSet())
+
+            CalculateClosestPointAndGenerateMesh();
+
+        }
+    }
+
+    private void CalculateClosestPointAndGenerateMesh()
+    {
+        if (wallPlacement.IsGroundPlaneSet())
+        {
+            // get device location
+            var deviceLocation = aRLocationProvider.LastLocation;
+            lastScannedPosition = aRCamera.transform.position;
+
+            // get the points around the user
+            var locationsToCreateMeshWith = CSV_extended.PointsWithinRadius(entireCSVData, radius, deviceLocation.ToLocation());
+
+            // get the closest point
+            closestPoint = CSV_extended.ClosestPointGPS(locationsToCreateMeshWith, deviceLocation.ToLocation());
+            heightAtCamera = (float)closestPoint.Height;
+            //lastScannedHeight = heightAtCamera;
+
+            Debug.Log("Height at camera:" + heightAtCamera);
+
+            // Convert GPS data to local data.
+            var localPositionsToGenerate = new List<Vector3>();
+
+            //float currentWaterHeight = 0;
+            foreach (var gpsLocation in locationsToCreateMeshWith)
             {
-                // get device location
-                var deviceLocation = aRLocationProvider.LastLocation;
+                var unityPosition = aRTransformationManager.GpsToArWorld(gpsLocation);
 
-                // get the points around the user
-                var locationsToCreateMeshWith = CSV_extended.PointsWithinRadius(entireCSVData, radius, deviceLocation.ToLocation());
+                // Om detta behövs senare sätt in det i en egen funktion
+                float calculatedHeight = 0;
 
-                // get the closest point
-                closestPoint = CSV_extended.ClosestPointGPS(locationsToCreateMeshWith, deviceLocation.ToLocation());
-                float heightAtCamera = (float)closestPoint.Height;
+                float height = (float)gpsLocation.Height;
+                float waterheight = (float)gpsLocation.WaterHeight;
+                bool insidebuilding = gpsLocation.Building;
+                float nearestneighborheight = (float)gpsLocation.NearestNeighborHeight;
+                float nearestneighborwater = (float)gpsLocation.NearestNeighborWater;
 
-                Debug.Log("Height at camera:" + heightAtCamera);
-
-                // Convert GPS data to local data.
-                var localPositionsToGenerate = new List<Vector3>();
-
-                //float currentWaterHeight = 0;
-                foreach (var gpsLocation in locationsToCreateMeshWith)
+                if (insidebuilding)
                 {
-                    var unityPosition = aRTransformationManager.GpsToArWorld(gpsLocation);
-
-                    // Om detta behövs senare sätt in det i en egen funktion
-                    float calculatedHeight = 0;
-
-                    float height = (float)gpsLocation.Height;
-                    float waterheight = (float)gpsLocation.WaterHeight;
-                    bool insidebuilding = gpsLocation.Building;
-                    float nearestneighborheight = (float)gpsLocation.NearestNeighborHeight;
-                    float nearestneighborwater = (float)gpsLocation.NearestNeighborWater;
-
-                    if (insidebuilding)
+                    if (nearestneighborheight != -9999)
                     {
-                        if (nearestneighborheight != -9999)
-                        {
-                            calculatedHeight = CalculateRelativeHeight(heightAtCamera, nearestneighborheight, nearestneighborwater);
-                            //currentWaterHeight = nearestneighborwater;
-                        }
+                        calculatedHeight = CalculateRelativeHeight(heightAtCamera, nearestneighborheight, nearestneighborwater);
+                        //currentWaterHeight = nearestneighborwater;
                     }
-                    else
-                    {
-                        calculatedHeight = CalculateRelativeHeight(heightAtCamera, height, waterheight);
-                        //currentWaterHeight = waterheight;
-                    }
-
-                    Debug.Log("Calculated height: " + calculatedHeight);
-
-                    unityPosition.y = calculatedHeight;
-                    localPositionsToGenerate.Add(unityPosition);
                 }
-            
-                meshGenerated = GenerateMesh(localPositionsToGenerate);
-
-                if (meshGenerated)
+                else
                 {
-                    //EnableWallPlacementAndUpdateCurrentWater(currentWaterHeight);
-                    //EnableWallPlacement();
-                    wallPlacement.WaterMeshGenerated(true);
-                    wallPlacement.SetWallPlacementEnabled(true);
-                    Debug.Log("Wallplacement enabled");
-                    wallPlacement.SetCurrentGlobalLocalPositions(locationsToCreateMeshWith, localPositionsToGenerate);
+                    calculatedHeight = CalculateRelativeHeight(heightAtCamera, height, waterheight);
+                    //currentWaterHeight = waterheight;
                 }
 
+                Debug.Log("Calculated height: " + calculatedHeight);
+
+                unityPosition.y = calculatedHeight;
+                localPositionsToGenerate.Add(unityPosition);
+            }
+
+            meshGenerated = GenerateMesh(localPositionsToGenerate);
+
+            if (meshGenerated)
+            {
+                //EnableWallPlacementAndUpdateCurrentWater(currentWaterHeight);
+                //EnableWallPlacement();
+                wallPlacement.WaterMeshGenerated(true);
+                wallPlacement.SetWallPlacementEnabled(true);
+                Debug.Log("Wallplacement enabled");
                 // Send data to wallplacement class for measuring stick calculations
+                wallPlacement.SetCurrentGlobalLocalPositions(locationsToCreateMeshWith, localPositionsToGenerate);
+                timeSinceLastCalculation = 0;
             }
         }
     }
 
+    // Reset playerpreffs
     private void OnApplicationPause(bool pause)
     {
-        // reset playerpreffs
         PlayerPrefs.DeleteKey("Bounds");
     }
 
-    // CODE for out of bounds logic - should not be triggered before the calibration of the GPS is finished
+    #region Coroutine
 
-    //private UnityEngine.Coroutine updateEachSecond;
+    // UnityEngine.Coroutine?
+    private Coroutine checkIfMeshShouldReload;
 
-    //private void OnEnable()
-    //{
-    //    updateEachSecond = StartCoroutine(OutOfBoundsCheck());
-    //}
-
-    //private void OnDisable()
-    //{
-    //    StopCoroutine(updateEachSecond);
-    //    updateEachSecond = null;
-    //}
-
-    //private IEnumerator OutOfBoundsCheck()
-    //{
-    //    // Run the coroutine every 2 seconds
-    //    var wait = new WaitForSecondsRealtime(2.0f);
-
-    //    while (true)
-    //    {
-    //        //Debug.Log("New bounds: " + bounds);
-    //        var distance = Vector3.Distance(aRCamera.transform.position, lastScannedPosition);
-
-    //        if(distance > bounds)
-    //        {
-    //            SceneManager.LoadScene("MainScene");                
-    //        }
-    //        yield return wait;
-    //    }
-    //}
-
-    // Currently not used - could be called from OutOfBoundsCheck
-    private void PlayerOutOfBounds()
+    private void OnEnable()
     {
-        lastScannedPosition = aRCamera.transform.position;
-        SSTools.ShowMessage("Out of bounds. Re-scan ground", SSTools.Position.top, SSTools.Time.twoSecond);
-        delaunayMesh.ClearMesh();
-        //waterMesh.Restart();
-        new WaitForSecondsRealtime(2f);
-        //wallPlacement.ResetScanning();
-    }
-    
-    /*
-    public void OnLocationProviderEnabled(LocationReading reading)
-    {
-        // this should be triggered once the 30 points are found and calculated
-
-        deviceLocation = reading.ToLocation();
-        InitializeWaterMesh();
-        closestPoint = CSV_extended.ClosestPointGPS(withinRadiusData, deviceLocation);
+        checkIfMeshShouldReload = StartCoroutine(OutOfBoundsCheck());
     }
 
-    public void OnLocationUpdated(LocationReading reading)
+    private IEnumerator OutOfBoundsCheck()
     {
-        if (!aRTransformationManager.TransformationAvailable)
-            return;
-        
-        // new transformed location
-        var unityLoc = aRTransformationManager.GpsToArWorld(reading.ToLocation());
-        // change this to artransformation manager
-        deviceLocation = reading.ToLocation();
+        // logic for the three different scenarios that should reload the mesh
+        var wait = new WaitForSeconds(1f);
 
-        if(!meshGenerated && wallPlacement.IsGroundPlaneSet())
+        // Regenerate mesh
+        while(true)
         {
-            generateMeshButton.interactable = true;
-            meshGenerated = true;
+            // check if the user has moved 30m from where the app started
+            var currentPosition = aRCamera.transform.position;
+            var distance = Vector3.Distance(currentPosition, lastScannedPosition);
 
-            var stateData = waterMesh.GetLocationsStateData();
-            var globalLocalPositions = stateData.GetGlobalLocalPosition();
-            wallPlacement.SetCurrentGlobalLocalPositions(globalLocalPositions);
-            wallPlacement.SetPointsWithinRadius(withinRadiusData);
-            Debug.Log($"Size of points within radius: {withinRadiusData.Count}");
+            if (distance > bounds)
+            {
+                lastScannedPosition = currentPosition;
+                // Reload mesh at position
+                CalculateClosestPointAndGenerateMesh();
+                // --> Add code here
+            }
+
+            lastScannedHeight = heightAtCamera;
+            // check if the user has moved 0.5m up or down from where the app started
+            CalculateClosestPointAndGenerateMesh();
+
+            float deltaHeight = lastScannedHeight - heightAtCamera;
+
+            if(Mathf.Abs(deltaHeight) > 0.5f)
+            {
+                // Rescan ground
+                // set meshGenerated to false
+                // Re-calculate closest position and generate the mesh again
+            }
+
+            // check if the app has been running for 2min from when the app started
+            if(timeSinceLastCalculation > 120)
+            {
+                // recalculate/regenerate mesh
+                CalculateClosestPointAndGenerateMesh();
+            }
+
+
         }
+
+        yield return wait;
     }
 
-    */
+    // Clean up by stopping the coroutine
+    private void OnDisable()
+    {
+        StopCoroutine(checkIfMeshShouldReload);
+        checkIfMeshShouldReload = null;
+    }
 
-    //private void InitializeWaterMesh()
-    //{        
-    //    //withinRadiusData = CSV_extended.PointsWithinRadius(entireCSVData, radius, deviceLocation);
-    //    //waterMesh.SetPositionsToHandleLocations(withinRadiusData);
-    //}
+    #endregion
 
     public bool GenerateMesh(List<Vector3> points)
     {
