@@ -28,7 +28,7 @@ public partial class DelaunayMesh : MonoBehaviour
         Polygon polygon = new Polygon();
         elevations = new List<float>();
 
-        Debug.Log($"Mesh Generated with {locations.ToList().Count} points.");
+        //Debug.Log($"Mesh Generated with {locations.ToList().Count} points.");
 
         // Create separate polygons for the triangulation
         foreach (var location in locations)
@@ -82,7 +82,6 @@ public partial class DelaunayMesh : MonoBehaviour
         // Create more than one chunk, if necessary
         for (int chunkStart = 0; chunkStart < mesh.Triangles.Count; chunkStart += trianglesInChunk)
         {
-            Debug.Log($"Chunk {numberOfChunks++}!");
             // Vertices in the unity mesh
             List<Vector3> vertices = new List<Vector3>();
 
@@ -163,7 +162,7 @@ public partial class DelaunayMesh : MonoBehaviour
     {
         if (chunks != null && chunks.Count > 0)
         {
-            Debug.Log("Clearing the mesh");
+            //Debug.Log("Clearing the mesh");
             foreach (Transform chunk in chunks)
                 Destroy(chunk.gameObject);
         }
@@ -203,6 +202,4 @@ public partial class DelaunayMesh : MonoBehaviour
         float elevation = elevations[index];
         return new Vector3((float)vertex.x, elevation, (float)vertex.y);
     }
-
-
 }

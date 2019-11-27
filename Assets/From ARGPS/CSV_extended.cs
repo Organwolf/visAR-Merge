@@ -12,7 +12,7 @@ public class CSV_extended
         TextAsset file = Resources.Load(pathToFile) as TextAsset;
         string[] lines = file.text.Split('\n');
 
-        Debug.Log("Rows in csv file: " + lines.Length);
+        //Debug.Log("Rows in csv file: " + lines.Length);
 
         foreach(string line in lines)
         {
@@ -47,7 +47,7 @@ public class CSV_extended
     {
         Location closestLocation = new Location();
         double minDistance = Double.MaxValue;
-        double distanceToClosestPoint = -1;
+        //double distanceToClosestPoint = -1;
 
         foreach (Location location in locations)
         {
@@ -56,11 +56,11 @@ public class CSV_extended
             if (distance <= minDistance)
             {
                 minDistance = distance;
-                distanceToClosestPoint = distance;
+                //distanceToClosestPoint = distance;
                 closestLocation = location;
             }
         }
-        Debug.Log("Distance to closest point: " + distanceToClosestPoint);
+        //Debug.Log("Distance to closest point: " + distanceToClosestPoint);
         return closestLocation;
     }
 

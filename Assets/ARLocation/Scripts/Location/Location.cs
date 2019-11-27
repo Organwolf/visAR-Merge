@@ -23,7 +23,7 @@ namespace ARLocation
         public double NearestNeighborWater;
         public double NearestNeighborHeight;
 
-
+  
         [FormerlySerializedAs("latitude")] [Tooltip("The latitude, in degrees.")]
         public double Latitude;
 
