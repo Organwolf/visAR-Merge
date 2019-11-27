@@ -1,8 +1,4 @@
-﻿/**
- *  Clean-up for re-use in MainScene 17/10
- */
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
@@ -106,7 +102,7 @@ public class WallPlacement : MonoBehaviour
         {
             if (Input.touchCount > 0)
             {
-                Debug.Log("TOUCH DETECTED");
+                //Debug.Log("TOUCH DETECTED");
 
                 var touch = Input.GetTouch(0);
 
@@ -380,7 +376,7 @@ public class WallPlacement : MonoBehaviour
 
     public bool GetWallPlacementEnabled() => wallPlacementEnabled;
 
-    //public void SetWallPlacementEnabled(bool state) => wallPlacementEnabled = state;
+    public void SetWallPlacementEnabled(bool state) => wallPlacementEnabled = state;
 
     public Transform GetGroundPlaneTransform()
     {
